@@ -1,4 +1,4 @@
-# app.py - FINAL CORRECTED VERSION
+# app.py - FINAL VERSION WITH NLTK DOWNLOAD
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -9,16 +9,14 @@ import re
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 import os
+import nltk  # <--- YEH IMPORT ZAROORI HAI
 
 # --- 1. INITIAL APP AND DB SETUP ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a-very-secret-key-that-should-be-changed'
-
-# THIS IS THE PART WE ARE FIXING
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'instance', 'users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -33,6 +31,14 @@ try:
 except FileNotFoundError:
     print("Error: model.pkl or vectorizer.pkl not found.")
     exit()
+
+# Download NLTK stopwords if they are not already present
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    print("Downloading NLTK stopwords...")
+    nltk.download('stopwords')
+    print("Download complete.")
 
 ps = PorterStemmer()
 def preprocess_text(text):
