@@ -24,6 +24,19 @@
                     {% if current_user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Detector</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>
+                        <!-- templates/base.html -->
+
+<!-- YEH CODE ADD KARO -->
+{% if current_user.is_authenticated and current_user.role == 'admin' %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin</a>
+</li>
+{% endif %}
+<!-- YAHAN TAK -->
+
+<li class="nav-item">
+    <a class="nav-link" href="/logout">Logout</a>
+</li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>

@@ -3,7 +3,7 @@
 {% block title %}Detector{% endblock %}
 
 {% block content %}
-    <!-- This replaces the old <style> block; styles are now in base.html or here -->
+    <!-- Styles are now in base.html or a dedicated CSS file for cleaner code -->
     <style>
         :root {
             --primary-color: #3498db;
@@ -23,85 +23,65 @@
             width: 100%;
             max-width: 650px;
             text-align: center;
-            margin: auto; /* Center the container */
+            margin: auto;
         }
 
-        h1 {
-            color: var(--text-color);
-            margin-bottom: 25px;
-            font-weight: 700;
-        }
-
-        textarea {
-            width: 100%;
-            height: 160px;
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid var(--light-gray);
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .main-btn {
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            color: var(--white-color);
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 600;
-            width: 100%;
-        }
+        h1 { color: var(--text-color); margin-bottom: 25px; font-weight: 700; }
+        textarea { width: 100%; height: 160px; padding: 15px; border-radius: 8px; border: 2px solid var(--light-gray); margin-bottom: 20px; box-sizing: border-box; font-size: 16px; }
+        textarea:focus { outline: none; border-color: var(--primary-color); }
+        .main-btn { background: linear-gradient(45deg, #3498db, #2980b9); color: var(--white-color); padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: 600; width: 100%; }
         
         /* RESULT CARD STYLING */
-        .result-card {
-            margin-top: 30px;
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-        }
+        .result-card { margin-top: 30px; padding: 30px; border-radius: 12px; text-align: left; }
         .result-card.real { background-color: #e8f8f2; border: 2px solid var(--success-color); }
         .result-card.fake { background-color: #fdedec; border: 2px solid var(--error-color); }
-        .result-icon { font-size: 50px; line-height: 1; }
-        .result-title { font-size: 28px; font-weight: 700; margin: 15px 0 10px; }
+        .result-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; text-align: center; }
         .result-card.real .result-title { color: var(--success-color); }
         .result-card.fake .result-title { color: var(--error-color); }
-        .original-text-container { margin-top: 20px; text-align: left; background-color: var(--white-color); padding: 15px; border-radius: 8px; max-height: 100px; overflow-y: auto; border: 1px solid var(--light-gray); }
-        .original-text-container h4 { margin: 0 0 10px 0; font-size: 16px; color: var(--text-color); }
-        .original-text-container p { margin: 0; font-size: 14px; color: #7f8c8d; }
-        .back-btn { background-color: #7f8c8d; color: var(--white-color); padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 25px; text-decoration: none; display: inline-block; }
+        .original-text p { margin: 0; font-size: 14px; color: #7f8c8d; max-height: 80px; overflow-y: auto; background-color: #f8f9fa; padding: 10px; border-radius: 5px; }
+        .feedback-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--light-gray); text-align: center; }
+        .feedback-btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 0 5px; }
+        .btn-correct { background-color: var(--success-color); color: white; }
+        .btn-incorrect { background-color: var(--error-color); color: white; }
     </style>
 
     <div class="container-main">
-        {% if not prediction_result %}
+        <!-- FORM TO SUBMIT NEWS -->
         <h1>TruthLens Detector</h1>
         <p>Welcome, {{ current_user.username }}! Enter the news text below to analyze.</p>
-        <form action="/predict" method="POST">
+        <form action="{{ url_for('predict') }}" method="POST">
             <textarea name="news_text" placeholder="Enter the news article, headline, or text here..." required></textarea>
             <br>
             <button type="submit" class="main-btn">Analyze News</button>
         </form>
-        {% else %}
+
+        <!-- RESULT AND FEEDBACK SECTION (DYNAMICALLY SHOWN) -->
+        {% if prediction_result %}
         <div class="result-card {% if prediction_result == 'REAL' %}real{% else %}fake{% endif %}">
-            {% if prediction_result == 'REAL' %}
-            <div class="result-icon">&#10004;</div>
-            {% else %}
-            <div class="result-icon">&#10006;</div>
-            {% endif %}
             <h2 class="result-title">This News Appears to be {{ prediction_result }}</h2>
-            <div class="original-text-container">
-                <h4>Analyzed Text:</h4>
+            
+            <div class="original-text">
+                <strong>Analyzed Text:</strong>
                 <p>"{{ news_text }}"</p>
             </div>
-            <a href="/" class="back-btn">Analyze Another News</a>
+
+            <div class="feedback-section">
+                {% if feedback_submitted %}
+                    <p class="text-success fw-bold">Thank you for your feedback!</p>
+                {% else %}
+                    <p>Was this prediction correct?</p>
+                    <form action="{{ url_for('feedback') }}" method="POST">
+                        <!-- Hidden fields to remember the context -->
+                        <input type="hidden" name="article_id" value="{{ article_id }}">
+                        <input type="hidden" name="original_text" value="{{ news_text }}">
+                        <input type="hidden" name="original_prediction" value="{{ prediction_result }}">
+                        
+                        <button type="submit" name="feedback" value="correct" class="feedback-btn btn-correct">👍 Yes, Correct</button>
+                        <button type="submit" name="feedback" value="incorrect" class="feedback-btn btn-incorrect">👎 No, Incorrect</button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
-    </div>
+    </div> 
 {% endblock %}

@@ -1,0 +1,54 @@
+<!-- templates/admin.html -->
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Admin Dashboard - Submitted Articles</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Submitted By</th>
+                    <th>Article Content (Snippet)</th>
+                    <th>Model Prediction</th>
+                    <th>User Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article, username in articles %}
+                <tr>
+                    <td>{{ article.id }}</td>
+                    <td>{{ username }}</td>
+                    <td title="{{ article.content }}">{{ article.content[:80] }}...</td> <!-- Poora content hover par dikhega -->
+                    <td>
+                        {% if article.model_prediction == 'REAL' %}
+                            <span class="badge bg-success">REAL</span>
+                        {% else %}
+                            <span class="badge bg-danger">FAKE</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if article.user_feedback %}
+                            {% if article.user_feedback == 'REAL' %}
+                                <span class="badge bg-success">REAL</span>
+                            {% else %}
+                                <span class="badge bg-danger">FAKE</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">No Feedback</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No articles have been submitted yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
